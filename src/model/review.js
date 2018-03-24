@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import FoodTruck from './foodtruck';
 let Schema = mongoose.Schema;
 
+
 let ReviewSchema = new Schema({
   title: String,
   text: String,

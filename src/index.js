@@ -13,21 +13,24 @@ app.server = http.createServer(app);
 // middleware
 
 app.use(bodyParser.json({
-  limit : config.bodyLimit
+    limit: config.bodyLimit
 }));
 
 // passport config
 app.use(passport.initialize());
 let Account = require('./model/account');
 passport.use(new LocalStrategy({
-  usernameField: 'email',
-  passwordField: 'password'
-},
-  Account.authenticate()
+        usernameField: 'email',
+        passwordField: 'password'
+    },
+    Account.authenticate()
 ));
 passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
 
+// var interval = setInterval(function(str1, str2) {
+//     console.log(str1 + " " + str2);
+// }, 1000, "Hello", "How are you!");
 // api routes v1
 app.use('/api/v1', routes);
 

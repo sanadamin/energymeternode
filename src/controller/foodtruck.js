@@ -83,10 +83,10 @@ export default({ config, db }) => {
       if (err) {
         res.send(err);
       }
-      foodtruck.name = req.body.name;
-      foodtruck.foodtype = req.body.foodtype;
-      foodtruck.avgcost = req.body.avgcost;
-      foodtruck.geometry.coordinates.lat = req.body.geometry.coordinates.lat;
+      foodtruck.name     =                      req.body.name;
+      foodtruck.foodtype =                  req.body.foodtype;
+      foodtruck.avgcost  =                   req.body.avgcost;
+      foodtruck.geometry.coordinates.lat  =  req.body.geometry.coordinates.lat;
       foodtruck.geometry.coordinates.long = req.body.geometry.coordinates.long;
       foodtruck.save(function(err) {
         if (err) {
