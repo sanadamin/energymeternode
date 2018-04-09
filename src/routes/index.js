@@ -12,6 +12,7 @@ import record from '../controller/record';
 import devision from '../controller/devision'
 import owner from '../controller/owner'
 import ownerdivisions from '../controller/ownerdivision'
+import devisionrecord from '../controller/devisionrecord'
 let router = express();
 
 // connect to db
@@ -32,6 +33,7 @@ initializeDb(db => {
     router.use('/devision', devision({ config, db }));
     router.use('/owner', owner({ config, db }));
     router.use('/ownerdivision', ownerdivisions({ config, db }));
+    router.use('/devisionrecord', devisionrecord({ config, db }));
     // router.use('/record',record({config,db}));
 });
 

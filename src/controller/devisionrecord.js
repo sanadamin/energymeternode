@@ -1,15 +1,13 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
-import TaskName from '../model/divisions';
+import TaskName from '../model/divisionsrecord';
 import Sites from '../model/sites';
 import bodyParser from 'body-parser';
 import passport from 'passport';
 import config from '../config';
-import Emplo from '../model/divisions'
-import MyTask from '../model/divisions';
+import Emplo from '../model/divisionsrecord'
 import Division from '../model/ownerdivisions'
 import Owner from '../model/owner'
-import TaskRecord from '../model/divisionsrecord'
 import { generateAccessToken, respond, authenticate } from '../middleware/authMiddleware';
 var nodemailer = require('nodemailer');
 
@@ -42,52 +40,7 @@ export default ({ config, db }) => {
             })
         })
     });
-    api.put('/closetask', (req, res) => {
-        MyTask.findById(req.body.taskid, (err, task) => {
-            if (err) {
-                res.send(err);
-            }
-            let taskrecord = new TaskRecord();
-            let date = new Date();
-            taskrecord.closedate = date.getFullYear() + '-' + (Number(date.getMonth()) + Number(1)) + '-' + date.getDate();
-            taskrecord.closestatus = req.body.closestatus;
-            taskrecord.closer = req.body.closer;
-            taskrecord.taskname = task.taskname;
-            taskrecord.description = task.description;
-            taskrecord.description = task.description;
-            taskrecord.taskownmer = task.taskownmer;
-            taskrecord.tasktype = task.tasktype;
-            taskrecord.project = task.project;
-            taskrecord.taskdate = task.taskdate;
-            taskrecord.duedate = task.duedate;
 
-            taskrecord.effectedentities = task.effectedentities;
-            taskrecord.entitieshistory = task.entitieshistory;
-            taskrecord.relatedpr = task.relatedpr;
-            taskrecord.relatedpo = task.relatedpo;
-            taskrecord.budgetline = task.budgetline;
-            taskrecord.budgetamount = task.budgetamount;
-
-            taskrecord.actualbudget = task.actualbudget;
-
-
-            taskrecord.entitieshistory = task.entitieshistory;
-            taskrecord.save((err) => {
-                if (err) {
-                    res.send(err);
-                }
-                TaskName.findByIdAndRemove(req.body.taskid, (err) => {
-                    if (err) {
-                        res.send(err)
-
-                    }
-                    res.send('added');
-                });
-
-            })
-        })
-
-    });
     api.post('/add', (req, res) => {
         let taskname = new TaskName();
         var date = new Date();
@@ -106,10 +59,9 @@ export default ({ config, db }) => {
         taskname.budgetline = req.body.budgetline;
         taskname.budgetamount = req.body.budgetamount
         taskname.actualbudget = req.body.actualbudget;
-        taskname.pendingon = ' ';
         taskname.progress = '0';
         for (let i of req.body.entities) {
-            taskname.effectedentities.push({ entityname: i['entityname'], entityupdate: i['entityupdate'], entityduedate: i['entityduedate'] });
+            taskname.effectedentities.push({ entityname: i['entityname'], entityupdate: i['entityupdate'] });
         }
         taskname.save((err) => {
             if (err) {
@@ -182,8 +134,7 @@ export default ({ config, db }) => {
                 entityname: req.body.entityname,
                 entityupdate: req.body.entityupdate,
                 dateofupdate: date.getFullYear() + '-' + (Number(date.getMonth()) + Number(1)) + '-' + date.getDate(),
-                updater: req.body.updater,
-                entityduedate: req.body.entityduedate
+                updater: req.body.updater
             });
             task.save((err) => {
                 if (err) {
@@ -207,25 +158,15 @@ export default ({ config, db }) => {
             task.relatedpr.prnumber = req.body.prnumber;
             task.relatedpr.prstatus = req.body.prstatus;
             task.relatedpo.ponumber = req.body.ponumber;
-            task.relatedpo.postatus = req.body.postatus;
-            task.budgetline = req.body.budgetline;
-            task.budgetamount = req.body.budgetreserved;
-            task.actualbudget = req.body.actualbudget;
-            // task.updates.push({ value: req.body.update, dateofupdate: date.getFullYear() + '-' + (Number(date.getMonth()) + Number(1)) + '-' + date.getDate(), updater: req.body.name })
+            task.relatedpo.postatus = req.body.postatus; // task.updates.push({ value: req.body.update, dateofupdate: date.getFullYear() + '-' + (Number(date.getMonth()) + Number(1)) + '-' + date.getDate(), updater: req.body.name })
             let j = 0;
             for (let i of task.effectedentities) {
                 i.entityupdate = req.body.update[j]['entityupdate'];
                 i.dateofupdate = date.getFullYear() + '-' + (Number(date.getMonth()) + Number(1)) + '-' + date.getDate();
-
                 if (i.updater) {
                     i.updater = req.body.update[j]['updater'];
                 } else {
                     i.set({ 'updater': req.body.update[j]['updater'] })
-                }
-                if (i.entityduedate) {
-                    i.entityduedate = req.body.update[j]['entityduedate'];
-                } else {
-                    i.set({ 'entityduedate': req.body.update[j]['entityduedate'] })
                 }
 
                 j++;
@@ -244,7 +185,6 @@ export default ({ config, db }) => {
                 task.entitieshistory.push({
                     entityname: i['entityname'],
                     entityupdate: i['entityupdate'],
-                    entityduedate: i['entityduedate'],
                     dateofupdate: task.effectedentities[j].dateofupdate,
                     updater: task.effectedentities[j].updater
                 })

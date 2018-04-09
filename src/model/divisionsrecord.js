@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 let Schema = mongoose.Schema;
 
-let DivisionSchema = new Schema({
+let DivisionRecordSchema = new Schema({
     taskname: String,
     description: String,
     taskownmer: String,
@@ -16,16 +16,16 @@ let DivisionSchema = new Schema({
     effectedentities: [{
         entityname: String,
         entityupdate: String,
-        entityduedate: String,
         dateofupdate: String,
-        updater: String
+        updater: String,
+        entityduedate: String
     }],
     entitieshistory: [{
         entityname: String,
         entityupdate: String,
         dateofupdate: String,
-        entityduedate: String,
-        updater: String
+        updater: String,
+        entityduedate: String
     }],
     relatedpr: { prnumber: String, prstatus: String },
     relatedpo: { ponumber: String, postatus: String },
@@ -33,9 +33,11 @@ let DivisionSchema = new Schema({
     budgetamount: String,
     actualbudget: String,
     updates: [{ value: String, dateofupdate: String, updater: String }],
-    pendingon: String
+    closedate: String,
+    closestatus: String,
+    closer: String
 
 
 
 });
-module.exports = mongoose.model('Division', DivisionSchema);
+module.exports = mongoose.model('DivisionRecord', DivisionRecordSchema);

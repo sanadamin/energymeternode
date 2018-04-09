@@ -43,7 +43,12 @@ export default ({ config, db }) => {
         });
 
     });
-
+    api.get('/findadmin', (req, res) => {
+        TaskName.find({ 'auth': 'Admin' }, (err, owners) => {
+            if (err) { res.send(err) }
+            res.json(owners);
+        })
+    });
     api.post('/add', (req, res) => {
         let taskname = new TaskName();
         taskname.name = req.body.name;
