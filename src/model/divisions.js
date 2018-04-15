@@ -33,7 +33,13 @@ let DivisionSchema = new Schema({
     budgetamount: String,
     actualbudget: String,
     updates: [{ value: String, dateofupdate: String, updater: String }],
-    pendingon: String
+    pending: [{
+        pendingon: String,
+        startdate: String,
+        enddate: String,
+        subtask: String,
+        feedback: String
+    }]
 
 
 

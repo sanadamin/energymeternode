@@ -9,6 +9,7 @@ import Emplo from '../model/divisions'
 import MyTask from '../model/divisions';
 import Division from '../model/ownerdivisions'
 import Owner from '../model/owner'
+import Pending from '../model/pending'
 import TaskRecord from '../model/divisionsrecord'
 import { generateAccessToken, respond, authenticate } from '../middleware/authMiddleware';
 var nodemailer = require('nodemailer');
@@ -194,6 +195,53 @@ export default ({ config, db }) => {
 
         });
 
+    });
+    api.put('/findpending', (req, res) => {
+        TaskName.findById(req.body.taskid, (err, task1) => {
+            let date = new Date();
+            if (err) { res.send(err) }
+
+            for (let i of task1.pending) {
+                console.log(i._id);
+                if (i._id == req.body.pendingid) {
+                    i.feedback = req.body.feedback;
+                    i.enddate = date.getFullYear() + '-' + (Number(date.getMonth()) + Number(1)) + '-' + date.getDate();
+                    task1.save((err) => {
+                        if (err) {
+
+                            res.send(err)
+                        }
+                        Pending.findById(req.body.pendingtaskid, (err, pend) => {
+
+                            if (pend.enddate) {
+                                pend.enddate = date.getFullYear() + '-' + (Number(date.getMonth()) + Number(1)) + '-' + date.getDate();
+                            } else {
+                                pend.set({ 'enddate': date.getFullYear() + '-' + (Number(date.getMonth()) + Number(1)) + '-' + date.getDate() })
+                            }
+                            pend.status = 'Close';
+                            pend.feedback = req.body.feedback;
+                            pend.save((err) => {
+                                if (err) { res.send(err) }
+                                res.send('ok');
+                            })
+                        })
+
+
+                    })
+
+                }
+            }
+        })
+    });
+    api.post('/updatepending', (req, res) => {
+        TaskName.findById(req.body.taskid, (err, task1) => {
+            let date = new Date();
+            task1.pending.push({ pendingon: req.body.pendingon, subtask: req.body.taskdelegate, startdate: date.getFullYear() + '-' + (Number(date.getMonth()) + Number(1)) + '-' + date.getDate() });
+            task1.save((err) => {
+                if (err) { res.send(err) }
+                res.status(200).send('Done');
+            })
+        });
     });
     api.put('/updatetask', (req, res) => {
         TaskName.findById(req.body.taskid, (err, task) => {
