@@ -26,55 +26,10 @@ export default ({ config, db }) => {
         });
     });
 
-api.get('/getalldelayed', (req, res) => {
+
+api.get('/getdelayed/:name', (req, res) => {
         let date = new Date();
-        let num = [];
-        TaskName.find({}, (err, tasks) => {
-            if (err) { res.send(err) }
-            for (let task of tasks) {
-                let taskdate = new Date(task.duedate);
-                console.log(task);
-                let days = Math.ceil((date.getTime() - taskdate.getTime()) / (1000 * 3600 * 24));
-                if (days > 0) {
-                    num.push(task);
-                }
-
-            }
-
-            res.send(num);
-        })
-    })
-
-	api.put('/updateduedatehis', (req, res) => {
-        let date = new Date();
-        TaskName.findById(req.body.taskid, (err, task) => {
-            task.duedatehis.push({  'oldduedate': task.duedate, 'justification': req.body.justification  }); 
-        //    task.duedatehis.set({  'oldduedate': task.duedate, 'justification': req.body.justification  });
-         // task.duedatehis.oldduedate = task.duedate;
-	// task.duedatehis.justification = req.body.justification;  
-            task.duedate = req.body.newdate;
-            task.save((err) => {
-                if (err) { res.send(err) }
-                res.send('Done');
-            })
-        })
-    })
-
-
-api.put('/updatetaskname',(req,res)=>{
-	TaskName.findById(req.body.taskid,(err,task)=>{
-		if(err){res.send(err)};
-		task.taskname = req.body.newname;
-		task.save((err)=>{
-			if(err){res.send(err)}
-			res.send('OK');
-});
-});
-
-});
- api.get('/getdelayed/:name', (req, res) => {
-        let date = new Date();
-        let num = [];
+        let num = 0;
         TaskName.find({ "taskownmer": req.params.name }, (err, tasks) => {
             if (err) { res.send(err) }
             for (let task of tasks) {
@@ -82,45 +37,32 @@ api.put('/updatetaskname',(req,res)=>{
                 
                 let days = Math.ceil((date.getTime() - taskdate.getTime()) / (1000 * 3600 * 24));
                 if (days > 0) {
-                    num.push(task);
+                    num = num + 1
                 }
 
             }
-
-            res.send(num);
-        })
-    });
-
-
- api.put('/removeent', (req, res) => {
-        TaskName.findById(req.body.taskid, (err, task) => {
-            if (err) { res.send(err) }
-            
-            task.entitieshistory.id(req.body.entid).remove();
-            task.save((err) => {
-                if (err) { res.send(err) }
-                res.send('Done');
-            })
+            res.json({ message: num });
         })
     })
 
-
-
-api.put('/removeent1', (req, res) => {
-        TaskName.findById(req.body.taskid, (err, task) => {
+api.get('/getdelayed/:name', (req, res) => {
+        let date = new Date();
+        let num = 0;
+        TaskName.find({ "taskownmer": req.params.name }, (err, tasks) => {
             if (err) { res.send(err) }
-            
-            task.effectedentities.id(req.body.entid).remove();
-            task.save((err) => {
-                if (err) { res.send(err) }
-                res.send('Done');
-            })
+            for (let task of tasks) {
+                let taskdate = new Date(task.duedate);
+                console.log(task);
+                let days = Math.ceil((date.getTime() - taskdate.getTime()) / (1000 * 3600 * 24));
+                if (days > 0) {
+                    num = num + 1
+                }
+
+            }
+            res.json({ message: num });
         })
     })
-
-
-
-api.get('/getrecordbydiv/:name', (req, res) => {
+    api.get('/getrecordbydiv/:name', (req, res) => {
         TaskRecord.find({ "taskownmer": req.params.name }, (err, tasks) => {
             if (err) { res.send(err) }
             res.send(tasks)
@@ -281,17 +223,19 @@ api.get('/fillflags', (req, res) => {
                         for (let i of owners) {
                             emails = emails + i.email + ',';
                         }
-            
+                        console.log(emails);
                         let transporter = nodemailer.createTransport({
-                           host: 'smtp2.batelco.jo',
-            port: 25,
-            secure: false,
+                            service: 'Gmail',
+                            auth: {
+                                user: 'engtasktracker@gmail.com',
+                                pass: 'Umniah@123',
+                            },
                         });
 
                         let shortdate = new Date(req.body.duedate);
                         shortdate = shortdate.getFullYear() + '-' + (Number(shortdate.getMonth()) + Number(1)) + '-' + shortdate.getDate()
                         let mailOptions = {
-                            from: '"[New Task] Umniah Engineering Task Tracking System" <tasktracker@umniah.jo>',
+                            from: '"[New Task] Umniah Engineering Task Tracking System" <engtasktracker@gmail.com>',
 
                             cc:  emails ,
                             subject: '[Open] New Task Of ' + req.body.taskname,
@@ -355,7 +299,7 @@ api.get('/fillflags', (req, res) => {
             if (err) { res.send(err) }
 
             for (let i of task1.pending) {
-            
+                console.log(i._id);
                 if (i._id == req.body.pendingid) {
                     i.feedback = req.body.feedback;
                     i.enddate = date.getFullYear() + '-' + (Number(date.getMonth()) + Number(1)) + '-' + date.getDate();
@@ -398,7 +342,7 @@ api.get('/fillflags', (req, res) => {
     });
     api.put('/updatetask', (req, res) => {
         TaskName.findById(req.body.taskid, (err, task) => {
-            
+            console.log(task.taskname);
             if (err) { res.send(err) };
             var date = new Date();
             if (task.progress) {
@@ -463,22 +407,18 @@ api.get('/fillflags', (req, res) => {
             })
         })
     })
-    api.put('/findempdiv', (req, res) => {
-        Division.find({ 'group.employee': req.body.name }, (err, div) => {
+    api.get('/findempdiv/:name', (req, res) => {
+        Division.find({ 'group.employee': req.params.name }, (err, div) => {
             if (err) { res.send(err) }
             res.json(div);
         })
     });
-
-
-    api.put('/findtaskbydiv', (req, res) => {
-        TaskName.find({ 'taskownmer': req.body.name }, (err, div) => {
+    api.get('/findtaskbydiv/:name', (req, res) => {
+        TaskName.find({ 'taskownmer': req.params.name }, (err, div) => {
             if (err) { res.send(err) }
             res.json(div);
         })
     });
-
-
     api.get('/history/:query/:id', (req, res) => {
         TaskName.findOne({ '_id': req.params.id, 'entitieshistory.entityname': req.params.query }, (err, task) => {
             if (err) { res.send(err) }

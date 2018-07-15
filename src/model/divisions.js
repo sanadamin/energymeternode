@@ -11,6 +11,8 @@ let DivisionSchema = new Schema({
     thirdparties: String,
     duedate: Date,
     progress: String,
+    flag: String,
+    weeklyupdate: String,
     taskdate: Date,
     notificationrec: [{ name: String, email: String, token: String }],
     effectedentities: [{
@@ -39,6 +41,10 @@ let DivisionSchema = new Schema({
         enddate: String,
         subtask: String,
         feedback: String
+    }],
+    duedatehis: [{
+        oldduedate: String,
+        justification: String
     }]
 
 

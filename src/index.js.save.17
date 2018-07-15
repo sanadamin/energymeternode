@@ -104,34 +104,29 @@ function sanad1(callback) {
     subjectarray1 = '';
     Division.find({}, (err, tasks) => {
 	if(err){console.log(err)}
-	try{
         let date = new Date();
         let emails = '';
 	let mylength = 0;
  	let temptasks = tasks;
         mylength = tasks.length;
-	console.log(tasks);
 	
         for (let i of tasks) {
-		
             let ddate = new Date(i.duedate);
             let days = Math.ceil((date.getTime() - ddate.getTime()) / (1000 * 3600 * 24));
+	    let fordone = false;
 	    mylength --;
 	    console.log('my length :' +mylength);
-	  //  temptasks.shift();
-	    	    
-           if (days > 0) {
+	    temptasks.shift();
+            if (days > 0) {
                 DivisionOwner.findOne({ 'name': i.taskownmer }, (err, divowner) => {
                     if (err) {console.log('err') }
                     let lastupdate = '';
-                     for (let ent of i.effectedentities) {
-                         lastupdate = lastupdate + '<tr><td> Entity Name </td><td>' + ent.entityname + '</td></tr><tr><td>Entity Update</td><td>' + ent.entityupdate + '</td></tr>'
-                     }
-                   let taskbody = '<tr><td>' + i.taskname + '</td><td>' + i.taskownmer + '</td><td>' + Math.abs(Math.ceil((date.getTime() - ddate.getTime()) / (1000 * 3600 * 24))) + ' Days' + '</td></tr>';
+                    // for (let ent of i.effectedentities) {
+                    //     lastupdate = lastupdate + '<tr><td> Entity Name </td><td>' + ent.entityname + '</td></tr><tr><td>Entity Update</td><td>' + ent.entityupdate + '</td></tr>'
+                    // }
+                    let taskbody = '<tr><td>' + i.taskname + '</td><td>' + i.taskownmer + '</td><td>' + Math.abs(Math.ceil((date.getTime() - ddate.getTime()) / (1000 * 3600 * 24))) + ' Days' + '</td></tr>';
                     msgarray1 = msgarray1 + taskbody;
-                    
-		  
-                  if (mylength === 0) {
+                  if (temptasks.length === 0) {
                         Owner.find({}, (err, owners) => {
                            if(err){console.log(err)}
 				 emails = '';
@@ -143,22 +138,19 @@ function sanad1(callback) {
                             callback();
                         });
                     }
+
                 });
-}
+
                 subjectarray1 = 'OverDue Sumary';
 
 
 
 
 
-
+            }
 
 
         }
-}
-catch(error){
-console.error(error);
-}
 
         msgarray1 = '<div><table border=1><tr style="background-color: #D9e838"><th>Task Name</th><th>Task owner</th><th>Delay Amount</th></tr>' + msgarray1;
         // emailcontrol2.sendEmail([emailarray1], [msgarray1], [subjectarray1]);
@@ -166,12 +158,12 @@ console.error(error);
 }
 
 
-//var j = schedule.scheduleJob('00 15 * * *', function(){
+//var j = schedule.scheduleJob('49 20 * * *', function(){
          
-//sanad1((err) => {
-  //  if (err) { console.log(err) }
-    // console.log('now'); 
-//   emailcontrol2.sendEmail([emailarray1],[msgarray1],[subjectarray1]);
+sanad1((err) => {
+    if (err) { console.log(err) }
+     console.log('now'); 
+   emailcontrol2.sendEmail([emailarray1],[msgarray1],[subjectarray1]);
 //});
 
 
@@ -179,7 +171,7 @@ console.error(error);
 
         
 
-//});
+});
 // var interval = setInterval(function(str1, str2) {
 //     console.log(str1 + " " + str2);
 // }, 1000, "Hello", "How are you!");

@@ -27,6 +27,8 @@ export default ({ config, db }) => {
     });
     api.post('/addpending', (req, res) => {
         let date = new Date();
+
+
         MyTask.findById(req.body.taskid, (err, task) => {
             let pendingid1 = '';
             console.log(task);
@@ -42,9 +44,41 @@ export default ({ config, db }) => {
                     pending.startdate = date.getFullYear() + '-' + (Number(date.getMonth()) + Number(1)) + '-' + date.getDate();
                     pending.taskdescription = req.body.taskdescription;
                     pending.status = 'Open';
+                    let emails = '';
                     pending.feedback = req.body.feedback;
                     pending.save((err) => {
-                        if (err) { res.send(err) }
+                        if (err) { res.send(err) };
+                        Division.findOne({ "name": req.body.pendingon }, (err, div) => {
+
+                            if (err) { res.send(err) };
+                            for (let i of div.group) {
+                                emails = emails + i.email + ',';
+                            }
+                            console.log(emails);
+
+                            let transporter = nodemailer.createTransport({
+                                service: 'Gmail',
+                                auth: {
+                                    user: 'engtasktracker@gmail.com',
+                                    pass: 'Umniah@123',
+                                },
+                            });
+
+                            let mailOptions = {
+                                from: '"[New Task] Umniah Engineering Task Tracking System" <engtasktracker@gmail.com>',
+
+                                cc:  emails ,
+                                subject: '[Delegated Task] New Task Of ' + req.body.taskdescription,
+                                html: '<div>A new Task has been Delegated please follow the below link: <a href="http://212.118.13.26/tasktracker/pendingtasks">' + req.body.taskdescription + ' </a>  </div>'
+                            };
+
+                            transporter.sendMail(mailOptions, (error, info) => {
+                                if (error) {
+                                    return console.log(error);
+                                }
+                                console.log('Message %s sent: %s', info.messageId, info.response);
+                            });
+                        })
                         res.send('pending');
                     })
                 };

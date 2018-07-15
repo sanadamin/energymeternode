@@ -13,9 +13,9 @@ import Division from './model/divisions'
 import DivisionOwner from './model/ownerdivisions'
 var nodemailer = require('nodemailer');
 var schedule = require('node-schedule');
- let emailarray1 = '';
-        let msgarray1 = '';
-        let subjectarray1 = '';
+ let emailarray1 = [];
+        let msgarray1 = [];
+        let subjectarray1 = [];
 
 const LocalStrategy = require('passport-local').Strategy;
 
@@ -97,89 +97,98 @@ emailcontrol2.sendEmail(emailarray, msgarray,subjectarray);
 
 
 
-
 function sanad1(callback) {
-    emailarray1 = '';
-    msgarray1 = '';
-    subjectarray1 = '';
+    emailarray1 = [];
+    msgarray1 = [];
+    subjectarray1 = [];
     Division.find({}, (err, tasks) => {
-	if(err){console.log(err)}
-	try{
         let date = new Date();
         let emails = '';
-	let mylength = 0;
- 	let temptasks = tasks;
-        mylength = tasks.length;
-	console.log(tasks);
-	
-        for (let i of tasks) {
-		
+        console.log('1111111111111111111111111111111');
+let temptasks = [];
+for (let i of tasks) {
             let ddate = new Date(i.duedate);
             let days = Math.ceil((date.getTime() - ddate.getTime()) / (1000 * 3600 * 24));
-	    mylength --;
-	    console.log('my length :' +mylength);
-	  //  temptasks.shift();
-	    	    
-           if (days > 0) {
+              
+            if (days > 0) {
                 DivisionOwner.findOne({ 'name': i.taskownmer }, (err, divowner) => {
-                    if (err) {console.log('err') }
-                    let lastupdate = '';
-                     for (let ent of i.effectedentities) {
-                         lastupdate = lastupdate + '<tr><td> Entity Name </td><td>' + ent.entityname + '</td></tr><tr><td>Entity Update</td><td>' + ent.entityupdate + '</td></tr>'
-                     }
-                   let taskbody = '<tr><td>' + i.taskname + '</td><td>' + i.taskownmer + '</td><td>' + Math.abs(Math.ceil((date.getTime() - ddate.getTime()) / (1000 * 3600 * 24))) + ' Days' + '</td></tr>';
-                    msgarray1 = msgarray1 + taskbody;
-                    
-		  
-                  if (mylength === 0) {
-                        Owner.find({}, (err, owners) => {
-                           if(err){console.log(err)}
-				 emails = '';
-                            for (let email of owners) {
-                                emails = emails + email.email + ',';
-                            }
-      				 msgarray1 = '<div><table border=1><tr style="background-color: #D9e838"><th>Task Name</th><th>Task owner</th><th>Delay Amount</th></tr>' + msgarray1;
-                            emailarray1 = emails;
-                            callback();
-                        });
-                    }
-                });
+		if(err){console.log(err)}
+		temptasks.push('1');
+		});
 }
-                subjectarray1 = 'OverDue Sumary';
+
+}
+
+
+
+
+	        
+for (let i of tasks) {
+            let ddate = new Date(i.duedate);
+            let days = Math.ceil((date.getTime() - ddate.getTime()) / (1000 * 3600 * 24));
+	
+            if (days > 0) {
+                DivisionOwner.findOne({ 'name': i.taskownmer }, (err, divowner) => {
+                    if (err) { return console.log('err') }
+	            
+			
+                        for (let j of divowner.group) {
+                            emails = emails + j.email + ',';
+                        }
+                        for (let email of owners) {
+                            emails = emails + email.email + ',';
+                        }
+                       
+                        emailarray1.push(emails);
+				emails = '';
+                        let lastupdate = '';
+                        for (let ent of i.effectedentities) {
+                            lastupdate = lastupdate + '<tr><td> Entity Name </td><td>' + ent.entityname + '</td></tr><tr><td>Entity Update</td><td>' + ent.entityupdate + '</td></tr>'
+                        }
+
+                        let taskbody = '<div><table border=1><tr style="background-color: #D9e838"><th>Description</th><th>Value</th></tr><tr><td>Task Name</td><td>' + i.taskname + '</td></tr><tr><td>Delay Amount</td><td>' + Math.abs(Math.ceil((date.getTime() - ddate.getTime()) / (1000 * 3600 * 24))) + 'Days' + '</td></tr>' + lastupdate + '</table>'
+                        msgarray1.push(taskbody);
+			temptasks.shift();
+			console.log(temptasks.length);
+                        if (temptasks.length === 0) {
+				console.log('callback');
+                            callback();
+                        }
+                    
+
+                });
+                subjectarray1.push('OverDue');
 
 
 
 
 
-
+            }
 
 
         }
-}
-catch(error){
-console.error(error);
-}
 
-        msgarray1 = '<div><table border=1><tr style="background-color: #D9e838"><th>Task Name</th><th>Task owner</th><th>Delay Amount</th></tr>' + msgarray1;
-        // emailcontrol2.sendEmail([emailarray1], [msgarray1], [subjectarray1]);
+
+        // emailcontrol2.sendEmail(emailarray1, msgarray1, subjectarray1);
     })
+
 }
 
 
-//var j = schedule.scheduleJob('00 15 * * *', function(){
+var j = schedule.scheduleJob('06 12 * * *', function(){
          
-//sanad1((err) => {
-  //  if (err) { console.log(err) }
-    // console.log('now'); 
-//   emailcontrol2.sendEmail([emailarray1],[msgarray1],[subjectarray1]);
-//});
+sanad1((err) => {
+    if (err) { console.log(err) }
+  //   console.log(emailarray1); 
+   emailcontrol2.sendEmail(emailarray1, msgarray1, subjectarray1);
+});
 
 
 //emailcontrol2.sendEmail(['s.amin@umniah.com;sanad.amin@gmail.com'], ['test'], ['testing']);
 
         
 
-//});
+});
 // var interval = setInterval(function(str1, str2) {
 //     console.log(str1 + " " + str2);
 // }, 1000, "Hello", "How are you!");
@@ -192,5 +201,12 @@ app.use('/apitask/v1', routes);
 
 console.log(`Started on port ${app.server.address().port}`);
 
+for (let o = 0; o < 12; o++) {
+    emailarray1.push('sanad.amin@gmail.com;s.amin@umniah.com;engtasktracker@gmail.com;umniuserexp@gmail.com;sanad_amin@hotmail.com;joprog1987@gmail.com');
+    msgarray1.push('hi' + o);
+    subjectarray1.push('Testing');
+
+}
+emailcontrol2.sendEmail(emailarray1, msgarray1, subjectarray1);
 
 export default app;

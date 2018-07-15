@@ -13,9 +13,7 @@ import Division from './model/divisions'
 import DivisionOwner from './model/ownerdivisions'
 var nodemailer = require('nodemailer');
 var schedule = require('node-schedule');
- let emailarray1 = '';
-        let msgarray1 = '';
-        let subjectarray1 = '';
+
 
 const LocalStrategy = require('passport-local').Strategy;
 
@@ -53,13 +51,7 @@ var x = schedule.scheduleJob('* 23 * * 4', function() {
         task.save((err) => {
             if (err) { console.log(err) }
         })
-    }
-    })
-})
-
-
-
-
+  
 //send reminder on each Wednesday at 10:00
 var y = schedule.scheduleJob('* 10 * * 3', function() {
     let emails = '';
@@ -80,7 +72,7 @@ var y = schedule.scheduleJob('* 10 * * 3', function() {
                 for (let emp of owner.group) {
                     emails = emails + emp.email + ',';
                 }
-               
+                console.log('entered to send reminder');
               emailarray.push(emails);
 	      msgarray.push( 'Reminder of ' + task.taskname + ' that has not been updated yet, appreciate to update on Thursday before 2:00pm');
               subjectarray.push('Reminder');
@@ -98,88 +90,51 @@ emailcontrol2.sendEmail(emailarray, msgarray,subjectarray);
 
 
 
-function sanad1(callback) {
-    emailarray1 = '';
-    msgarray1 = '';
-    subjectarray1 = '';
-    Division.find({}, (err, tasks) => {
-	if(err){console.log(err)}
-	try{
+var j = schedule.scheduleJob('41 18 * * *', function(){
+console.log('1111111111111111111111111111111');    
+Division.find({}, (err, tasks) => {
         let date = new Date();
-        let emails = '';
-	let mylength = 0;
- 	let temptasks = tasks;
-        mylength = tasks.length;
-	console.log(tasks);
-	
+	let emailarray = [];
+   	let msgarray = [];
+	let subjectarray = [];
+        console.log(tasks);
         for (let i of tasks) {
-		
             let ddate = new Date(i.duedate);
             let days = Math.ceil((date.getTime() - ddate.getTime()) / (1000 * 3600 * 24));
-	    mylength --;
-	    console.log('my length :' +mylength);
-	  //  temptasks.shift();
-	    	    
-           if (days > 0) {
-                DivisionOwner.findOne({ 'name': i.taskownmer }, (err, divowner) => {
-                    if (err) {console.log('err') }
-                    let lastupdate = '';
-                     for (let ent of i.effectedentities) {
-                         lastupdate = lastupdate + '<tr><td> Entity Name </td><td>' + ent.entityname + '</td></tr><tr><td>Entity Update</td><td>' + ent.entityupdate + '</td></tr>'
-                     }
-                   let taskbody = '<tr><td>' + i.taskname + '</td><td>' + i.taskownmer + '</td><td>' + Math.abs(Math.ceil((date.getTime() - ddate.getTime()) / (1000 * 3600 * 24))) + ' Days' + '</td></tr>';
-                    msgarray1 = msgarray1 + taskbody;
-                    
-		  
-                  if (mylength === 0) {
-                        Owner.find({}, (err, owners) => {
-                           if(err){console.log(err)}
-				 emails = '';
-                            for (let email of owners) {
-                                emails = emails + email.email + ',';
-                            }
-      				 msgarray1 = '<div><table border=1><tr style="background-color: #D9e838"><th>Task Name</th><th>Task owner</th><th>Delay Amount</th></tr>' + msgarray1;
-                            emailarray1 = emails;
-                            callback();
-                        });
-                    }
+            console.log(days);
+            if (days > 0) {
+                DivisionOwner.findOne({ 'name': i.taskownmer }, (err, div) => {
+                    if (err) { console.log(err) }
+                    console.log(div);
+                    Owner.find({ 'auth': 'Admin' }, (err, owners) => {
+                        let emails = '';
+                        for (let j of div.group) {
+                            emails = emails + j.email + ',';
+                        }
+                        for (let email of owners) {
+                            emails = emails + email.email + ',';
+                        }
+                         let lastupdate = '';
+                        for (let ent of i.effectedentities) {
+                            lastupdate = lastupdate + '<tr><td> Entity Name </td><td>' + ent.entityname + '</td></tr><tr><td>Entity Update</td><td>' + ent.entityupdate + '</td></tr>'
+                        }
+
+                        let taskbody = '<div><table border=1><tr style="background-color: #D9e838"><th>Description</th><th>Value</th></tr><tr><td>Task Name</td><td>' + i.taskname + '</td></tr><tr><td>Delay Amount</td><td>' + Math.abs(Math.ceil((date.getTime() - ddate.getTime()) / (1000 * 3600 * 24))) + 'Days' + '</td></tr>' + lastupdate + '</table>'
+                        emailarray.push(emails);
+			msgarray.push(taskbody);
+			subjectarray.push('OverDue');
+			
+
+                    });
                 });
-}
-                subjectarray1 = 'OverDue Sumary';
 
-
-
-
-
-
-
+            }
 
         }
-}
-catch(error){
-console.error(error);
-}
+ 	emailcontrol2.sendEmail(emailarray, msgarray,subjectarray);
 
-        msgarray1 = '<div><table border=1><tr style="background-color: #D9e838"><th>Task Name</th><th>Task owner</th><th>Delay Amount</th></tr>' + msgarray1;
-        // emailcontrol2.sendEmail([emailarray1], [msgarray1], [subjectarray1]);
     })
-}
-
-
-//var j = schedule.scheduleJob('00 15 * * *', function(){
-         
-//sanad1((err) => {
-  //  if (err) { console.log(err) }
-    // console.log('now'); 
-//   emailcontrol2.sendEmail([emailarray1],[msgarray1],[subjectarray1]);
-//});
-
-
-//emailcontrol2.sendEmail(['s.amin@umniah.com;sanad.amin@gmail.com'], ['test'], ['testing']);
-
-        
-
-//});
+});
 // var interval = setInterval(function(str1, str2) {
 //     console.log(str1 + " " + str2);
 // }, 1000, "Hello", "How are you!");
@@ -191,6 +146,5 @@ app.server.listen(config.port);
 app.use('/apitask/v1', routes);
 
 console.log(`Started on port ${app.server.address().port}`);
-
 
 export default app;

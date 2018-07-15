@@ -1,0 +1,105 @@
+import http from 'http';
+import express from 'express';
+import bodyParser from 'body-parser';
+import mongoose from 'mongoose';
+import config from './config';
+import routes from './routes';
+import passport from 'passport';
+
+import emailcontrol from './middleware/emailcontrol'
+import Owner from './model/owner'
+import Division from './model/divisions'
+import DivisionOwner from './model/ownerdivisions'
+var nodemailer = require('nodemailer');
+var schedule = require('node-schedule');
+
+
+const LocalStrategy = require('passport-local').Strategy;
+
+let app = express();
+app.server = http.createServer(app);
+
+// middleware
+
+app.use(bodyParser.json({
+    limit: config.bodyLimit
+}));
+
+// passport config
+app.use(passport.initialize());
+let Account = require('./model/account');
+passport.use(new LocalStrategy({
+        usernameField: 'email',
+        passwordField: 'password'
+    },
+    Account.authenticate()
+));
+passport.serializeUser(Account.serializeUser());
+passport.deserializeUser(Account.deserializeUser());
+//reset weekly update flag on each thursday 23:00 
+var x = schedule.scheduleJob('* 23 * * 5', function() {
+    Division.find({}, (err, tasks) => {
+        if (err) { console.log(err) }
+        if (tasks.weeklyupdate) {
+            tasks.weeklyupdate = 'No'
+        } else {
+            tasks.set({ 'weeklyupdate': 'No' })
+        }
+        tasks.save((err) => {
+            if (err) { console.log(err) }
+        })
+    })
+})
+
+//send reminder email on wednesday at 10:00
+var y = schedule.scheduleJob('* 9 * * 0', function() {
+    let emails = '';
+    Division.find({'weeklyupdate':'No'}, (err, tasks) => {
+        for (let task of tasks) {
+            Owner.find({ name: task.taskownmer }, (err, owners) => {
+                for (let owner of owners) {
+                    emails = emails + ',';
+                    emailcontrol.sendEmail(emails, 'Reminder To Update the following' + task.taskname);
+                }
+            })
+        }
+    })
+})
+
+
+    Division.find({}, (err, tasks) => {
+        for (let task of tasks) {
+                       if (days > 0) {
+                DivisionOwner.findOne({ 'name': i.taskownmer }, (err, div) => {
+                    if (err) { console.log(err) }
+                    console.log(div);
+                    Owner.find({ 'auth': 'Admin' }, (err, owners) => {
+                        let emails = '';
+                        for (let j of div.group) {
+                            emails = emails + j.email + ',';
+                        }
+                        for (let email of owners) {
+                            emails = emails + email.email + ',';
+                        }
+                        let taskbody = 'Task ' + i.taskname + ' is overdue by ' + Math.abs(Math.ceil((date.getTime() - ddate.getTime()) / (1000 * 3600 * 24))) + 'Days';
+                        console.log(days);
+                        emailcontrol.sendEmail(emails, taskbody)
+                    });
+                });
+
+            }
+        }
+
+    })
+});
+// var interval = setInterval(function(str1, str2) {
+//     console.log(str1 + " " + str2);
+// }, 1000, "Hello", "How are you!");
+// api routes v1
+app.use('/apitask/v1', routes);
+
+app.server.listen(config.port);
+
+console.log(`Started on port ${app.server.address().port}`);
+
+export default app;

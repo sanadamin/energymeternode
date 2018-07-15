@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+goose from 'mongoose';
 import { Router } from 'express';
 import TaskName from '../model/owner';
 import Sites from '../model/sites';
@@ -7,10 +7,7 @@ import passport from 'passport';
 import config from '../config';
 import Emplo from '../model/owner'
 var nodemailer = require('nodemailer');
-
-
-import {generateAccessToken, respond, authenticate } from '../middleware/authMiddleware';
-
+import { generateAccessToken, respond, authenticate } from '../middleware/authMiddleware';
 
 export default ({ config, db }) => {
     let api = Router();
@@ -24,9 +21,8 @@ export default ({ config, db }) => {
         });
     });
     api.put('/empdata', (req, res) => {
-        Emplo.findOne({username: req.body.username }, (err, emp) => {
-	console.log('123');           
- if (err) {
+        TaskName.findOne({ username: req.body.username }, (err, emp) => {
+            if (err) {
                 res.send(err);
             }
             res.json({ name: emp.name, auth: emp.auth });
@@ -95,18 +91,6 @@ export default ({ config, db }) => {
             }
         })
     });
-
-	api.get('/editemail/:id/:email',(req,res)=>{
-	TaskName.findById(req.params.id,(err,emp)=>{
-	if(err){res.send(err)}
-	emp.email= req.params.email;
-	emp.save((err)=>{
-	if(err){res.send(err)}
-	
-})
-res.send('edited');
-});
-})
 
     api.get('/delete/:id', (req, res) => {
         TaskName.findByIdAndRemove(req.params.id, (err) => {

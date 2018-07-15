@@ -21,6 +21,24 @@ export default ({ config, db }) => {
         });
     });
 
+api.get('/upatewrong',(req,res)=>{
+	TaskName.find({},(err,owners)=>{
+		for (let i of owners){
+			for (let j of i.group){
+				if(j.email == "bomari@umniah.com)"){
+					j.email = "bomari@umniah.com";
+					i.save((err)=>{
+						if(err){res.send(err)}
+						res.send('Done');
+});
+}
+}
+}
+
+});
+
+});
+
     api.post('/add', (req, res) => {
         let taskname = new TaskName();
         taskname.name = "Power Planning";
