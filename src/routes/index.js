@@ -2,18 +2,11 @@ import express from 'express';
 import config from '../config';
 import initializeDb from '../db';
 import middleware from '../middleware';
-import foodtruck from '../controller/foodtruck';
-import account from '../controller/account';
-import sites from '../controller/sites'
-import employee from '../controller/employee'
-import task from '../controller/task';
-import taskapproval from '../controller/taskapproval';
-import record from '../controller/record';
 import devision from '../controller/devision'
 import owner from '../controller/owner'
 import ownerdivisions from '../controller/ownerdivision'
 import devisionrecord from '../controller/devisionrecord'
-import pending from '../controller/pending'
+import energy from '../controller/energy'
 let router = express();
 
 // connect to db
@@ -31,7 +24,7 @@ initializeDb(db => {
     // router.use('/task', task({ config, db }));
     // router.use('/taskapproval', taskapproval({ config, db }));
     // router.use('taskname', taskname({ config, db }));
-    router.use('/pending', pending({ config, db }));
+    router.use('/energy', energy({ config, db }));
     router.use('/devision', devision({ config, db }));
     router.use('/owner', owner({ config, db }));
     router.use('/ownerdivision', ownerdivisions({ config, db }));
